@@ -1,31 +1,40 @@
-name: Sync with Canvas Ruby v2.7
+from flask import Flask
 
-on:
-  push:
-    branches: [master, main]
-    paths:
-      - 'README.md'
+app = Flask(__name__)
 
-jobs:
-  sync:
-    name: Sync with Canvas
+@app.route('/')
+def index():
+    return '<h1>Python Operations with Flask Routing and Views</h1>'
 
-    runs-on: ubuntu-latest
+@app.route('/print/<string:param>')
+def print_string(param):
+    print(param)
+    return f'<p>Printed String: {param}</p>'
 
-    steps:
-      - uses: actions/checkout@v2
+@app.route('/count/<int:param>')
+def count(param):
+    return '\n'.join(str(i) for i in range(param)) + '\n'  # Ensure each number is on a new line with a newline at the end
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
+@app.route('/math/<int:num1><operation><int:num2>')
+def math(num1, operation, num2):
+    result = None
+    if operation == '+':
+        result = num1 + num2
+    elif operation == '-':
+        result = num1 - num2
+    elif operation == '*':
+        result = num1 * num2
+    elif operation == 'div':
+        if num2 != 0:
+            result = num1 / num2
+        else:
+            return 'Error: Division by zero'
+    elif operation == '%':
+        result = num1 % num2
+    else:
+        return 'Error: Invalid operation'
 
-      - name: Install github-to-canvas
-        run: gem install github-to-canvas
+    return f'<p>Result of {num1} {operation} {num2} is: {result}</p>'
 
-      # Secret stored in learn-co-curriculum Settings/Secrets
-      - name: Sync from .canvas file
-        run: github-to-canvas -a -lr
-        env:
-          CANVAS_API_KEY: ${{ secrets.CANVAS_API_KEY }}
-          CANVAS_API_PATH: ${{ secrets.CANVAS_API_PATH }}
+if __name__ == '__main__':
+    app.run(port=5555, debug=True)
